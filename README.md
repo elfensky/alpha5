@@ -72,12 +72,6 @@ Encode an integer NORAD ID into its 5-character designator string.
 
 Throws if `n` is not a non-negative finite integer, or exceeds `339_999`. `BigInt`, booleans, strings, `null`, `undefined`, `NaN`, `±Infinity`, and non-integer floats are all rejected — only plain finite integers are accepted.
 
-#### What's not provided (intentional)
-
-- **No unpadded output option.** The library produces canonical 5-character Alpha-5; if you want unpadded output for IDs below 100,000, that's just `String(n)`. Variable-width output is not part of the Alpha-5 spec and would dilute the library's purpose.
-- **No bulk parsing of TLE/3LE lines.** This is a codec for the catalog-ID field only. Use a TLE parser (`tle.js`, `node-tle`) for full TLE/3LE handling and pass the catalog field through `decode` after extraction.
-- **No error subclasses.** All failures throw a plain `Error` with a descriptive message. If you need to distinguish failure modes, match on the message.
-
 ## The full letter table
 
 Verbatim from the [Space-Track Alpha-5 documentation](https://www.space-track.org/documentation#tle-alpha5):
@@ -100,6 +94,12 @@ Verbatim from the [Space-Track Alpha-5 documentation](https://www.space-track.or
 The Alpha-5 spec is frozen by the US Space Force. This library follows it exactly and is tested against every example in the official documentation, the full letter table, both I/O-skip boundaries in both directions, and a round-trip property check across the entire 0–339,999 range.
 
 If the spec ever changes (Space-Track recommends migrating to XML/JSON/KVN for new work — Alpha-5 is itself a stopgap), this library will follow.
+
+## What's not provided
+
+- **No unpadded output option.** The library produces canonical 5-character Alpha-5; if you want unpadded output for IDs below 100,000, that's just `String(n)`. Variable-width output is not part of the Alpha-5 spec and would dilute the library's purpose.
+- **No bulk parsing of TLE/3LE lines.** This is a codec for the catalog-ID field only. Use a TLE parser like [`tle.js`](https://www.npmjs.com/package/tle.js) for full TLE/3LE handling and pass the catalog field through `decode` after extraction.
+- **No error subclasses.** All failures throw a plain `Error` with a descriptive message. If you need to distinguish failure modes, match on the message.
 
 ## License
 
