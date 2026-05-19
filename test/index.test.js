@@ -11,12 +11,16 @@ import { decode, encode } from '../src/index.js';
 
 describe('decode', () => {
     test('plain numeric designator', () => {
+        expect(decode('1')).toBe(1);
+    });
+
+    test('plain numeric designator', () => {
         expect(decode('25544')).toBe(25544);
     });
 
     test('plain numeric with leading zeros', () => {
         expect(decode('00007')).toBe(7);
-        expect(decode('00001')).toBe(1);
+        expect(decode('00256')).toBe(256);
     });
 
     test('Alpha-5: A0000 == 100000', () => {
