@@ -488,6 +488,9 @@ describe('decode() rejects exotic non-string types', () => {
     test('rejects boolean false', () => {
         expect(() => decode(/** @type {any} */ (false))).toThrow(/Invalid NORAD/);
     });
+    test('rejects number', () => {
+        expect(() => decode(/** @type {any} */ (25544))).toThrow(/Invalid NORAD/);
+    });
 });
 
 describe('encode() rejects every non-integer numeric kind', () => {
