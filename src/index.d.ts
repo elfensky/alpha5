@@ -6,7 +6,7 @@
  *
  * @throws {Error} If the input is not a valid NORAD designator.
  */
-export declare function decodeNoradId(s: string): number;
+export declare function decode(s: string): number;
 
 /**
  * Encode an integer NORAD ID into its 5-character designator string.
@@ -17,4 +17,4 @@ export declare function decodeNoradId(s: string): number;
  *
  * @throws {Error} If `n` is not a non-negative integer, or exceeds 339,999.
  */
-export declare function formatNoradId(n: number): string;
+export declare function encode(n: number): string;

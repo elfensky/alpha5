@@ -30,7 +30,7 @@ const MAX_NORAD = 339999;
  *
  * Accepts both plain numeric strings (e.g. `"25544"`, `"00007"`) and
  * Alpha-5 designators (e.g. `"A0123"`, `"Z9999"`). Numeric inputs of
- * any length are accepted — `decodeNoradId("7")` returns `7` — to
+ * any length are accepted — `decode("7")` returns `7` — to
  * accommodate JSON sources that omit leading zeros.
  *
  * @param {string} s - The NORAD designator. Must be a non-empty string.
@@ -38,12 +38,12 @@ const MAX_NORAD = 339999;
  * @throws {Error} If the input is not a valid NORAD designator.
  *
  * @example
- *   decodeNoradId("25544")  // 25544
- *   decodeNoradId("00007")  // 7
- *   decodeNoradId("A0123")  // 100123
- *   decodeNoradId("Z9999")  // 339999
+ *   decode("25544")  // 25544
+ *   decode("00007")  // 7
+ *   decode("A0123")  // 100123
+ *   decode("Z9999")  // 339999
  */
-export function decodeNoradId(s) {
+export function decode(s) {
     if (typeof s !== 'string' || s.length === 0) {
         throw new Error(`Invalid NORAD designator: ${String(s)}`);
     }
@@ -82,12 +82,12 @@ export function decodeNoradId(s) {
  *   exceeds the Alpha-5 maximum of 339,999.
  *
  * @example
- *   formatNoradId(7)        // "00007"
- *   formatNoradId(25544)    // "25544"
- *   formatNoradId(100123)   // "A0123"
- *   formatNoradId(339999)   // "Z9999"
+ *   encode(7)        // "00007"
+ *   encode(25544)    // "25544"
+ *   encode(100123)   // "A0123"
+ *   encode(339999)   // "Z9999"
  */
-export function formatNoradId(n) {
+export function encode(n) {
     if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0) {
         throw new Error(`Invalid NORAD ID: ${String(n)}`);
     }

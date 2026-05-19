@@ -9,10 +9,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Initial release.
-- `decodeNoradId(s)` — decode NORAD designator strings (plain numeric or
-  Alpha-5) into their canonical integer form.
-- `formatNoradId(n)` — encode integer NORAD IDs into 5-character designator
-  strings, using Alpha-5 letter prefix for values 100,000–339,999.
+- `decode(s)` — parse an Alpha-5 or plain numeric designator string into its
+  canonical integer form.
+- `encode(n)` — encode an integer (0–339,999) into a 5-character designator
+  string, using the Alpha-5 letter prefix for values 100,000 and above.
 - Hand-written TypeScript declarations.
 - Test suite covering every example in the Space-Track Alpha-5 documentation,
   the full A=10..Z=33 letter table, both I/O-skip boundaries in both

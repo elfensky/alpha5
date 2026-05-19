@@ -1,9 +1,6 @@
 {
-    "name": "@elfensky/alpha5",
+    "name": "alpha5",
     "version": "1.0.0",
-    "publishConfig": {
-        "access": "public"
-    },
     "description": "NORAD Alpha-5 designator codec — encode/decode satellite catalog IDs between integers and the 5-character Space-Track format.",
     "type": "module",
     "main": "./src/index.js",

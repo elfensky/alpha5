@@ -15,7 +15,7 @@ Spec: <https://www.space-track.org/documentation#tle-alpha5>
 ## Install
 
 ```bash
-npm install @elfensky/alpha5
+npm install alpha5
 ```
 
 Requires Node.js 20 or newer. Works in browsers as well — no runtime dependencies.
@@ -23,28 +23,31 @@ Requires Node.js 20 or newer. Works in browsers as well — no runtime dependenc
 ## Usage
 
 ```js
-import { decodeNoradId, formatNoradId } from '@elfensky/alpha5';
+import { decode, encode } from 'alpha5';
+// or, for a namespace import:
+//   import * as alpha5 from 'alpha5';
+//   alpha5.decode('A0123');
 
 // Plain numeric designators round-trip unchanged.
-decodeNoradId('25544'); // 25544
-formatNoradId(25544); // '25544'
+decode('25544'); // 25544
+encode(25544); // '25544'
 
 // Alpha-5 designators decode to their canonical integer.
-decodeNoradId('A0123'); // 100123
-formatNoradId(100123); // 'A0123'
+decode('A0123'); // 100123
+encode(100123); // 'A0123'
 
 // The I/O letters are reserved.
-decodeNoradId('I0000'); // throws Error
-decodeNoradId('O0000'); // throws Error
+decode('I0000'); // throws Error
+decode('O0000'); // throws Error
 
 // Boundaries: A0000 = 100,000, Z9999 = 339,999.
-formatNoradId(339999); // 'Z9999'
-formatNoradId(340000); // throws Error: exceeds Alpha-5 range
+encode(339999); // 'Z9999'
+encode(340000); // throws Error: exceeds Alpha-5 range
 ```
 
 ## API
 
-### `decodeNoradId(s: string): number`
+### `decode(s: string): number`
 
 Decode a NORAD designator string into its integer value.
 
@@ -52,7 +55,7 @@ Accepts both plain numeric strings (`"25544"`, `"00007"`) and Alpha-5 designator
 
 Throws if the input is not a string, is empty, has whitespace or a sign prefix, uses a reserved letter (`I`/`O`), uses a lowercase letter, or has a non-digit tail.
 
-### `formatNoradId(n: number): string`
+### `encode(n: number): string`
 
 Encode an integer NORAD ID into its 5-character designator string.
 
