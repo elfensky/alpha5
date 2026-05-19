@@ -358,6 +358,31 @@ describe('decode() input shape — strict vs permissive', () => {
     });
 });
 
+describe('decode() accepts zero-padded numeric strings of any length', () => {
+    // Padding is a string property — JS number literals can't carry leading
+    // zeros (strict-mode SyntaxError on `0007`). Any string that's all-digits
+    // and decodes to a value ≤ 339,999 is accepted, regardless of width.
+    // Real Space-Track sources emit 5-char fields, but JSON consumers often
+    // see unpadded or differently-padded forms via z.coerce.string().
+    test.each(['7', '07', '007', '0007', '00007', '000007', '0000000007'])(
+        'decode(%j) === 7',
+        (s) => {
+            expect(decode(s)).toBe(7);
+        },
+    );
+
+    test.each(['25544', '025544', '00025544', '000000025544'])(
+        'decode(%j) === 25544',
+        (s) => {
+            expect(decode(s)).toBe(25544);
+        },
+    );
+
+    test('arbitrarily-padded max value still decodes (within bound)', () => {
+        expect(decode('0000339999')).toBe(339999);
+    });
+});
+
 describe('decode() output bound check — value must be in 0..339,999', () => {
     // The decoder accepts numeric strings of any length (for JSON-coerce
     // compatibility), but the resulting integer must still be a valid
