@@ -16,13 +16,18 @@
  * Spec: https://www.space-track.org/documentation#tle-alpha5
  */
 
+// ASCII code points for the Alpha-5 character set. Using charCodeAt with
+// integer comparisons keeps the hot decode path allocation-free and avoids
+// per-call regex or string scans. I and O are reserved by the spec to avoid
+// visual confusion with the digits 1 and 0.
 const CODE_0 = 48; // '0'
 const CODE_9 = 57; // '9'
-const CODE_A = 65;
-const CODE_I = 73;
-const CODE_O = 79;
-const CODE_Z = 90;
+const CODE_A = 65; // 'A'
+const CODE_I = 73; // 'I' — reserved
+const CODE_O = 79; // 'O' — reserved
+const CODE_Z = 90; // 'Z'
 
+// Hard upper bound: Z9999 = 33 * 10000 + 9999. Spec is frozen; this never changes.
 const MAX_NORAD = 339999;
 
 /**
@@ -46,32 +51,43 @@ const MAX_NORAD = 339999;
  *   decode("Z9999")  // 339999
  */
 export function decode(s) {
+    // Reject non-strings and empty strings; String() in the message renders
+    // null/undefined safely instead of throwing on .toString().
     if (typeof s !== 'string' || s.length === 0) {
         throw new Error(`Invalid NORAD designator: ${String(s)}`);
     }
     const c = s.charCodeAt(0);
 
+    // Numeric branch: first char is a digit, parsed as a plain integer designator.
     if (c >= CODE_0 && c <= CODE_9) {
+        // First-char test only validates position 0; ensure the whole string is digits.
         if (!/^\d+$/.test(s)) {
             throw new Error(`Invalid NORAD designator: ${s}`);
         }
         const n = parseInt(s, 10);
+        // Reject inputs whose value exceeds the spec range (e.g. "999999").
         if (n > MAX_NORAD) {
             throw new Error(`NORAD ID ${n} exceeds Alpha-5 range (max ${MAX_NORAD})`);
         }
         return n;
     }
 
+    // Letter branch: must be uppercase A-Z, excluding the two reserved letters.
     if (c < CODE_A || c > CODE_Z || c === CODE_I || c === CODE_O) {
         throw new Error(`Invalid NORAD designator: ${s}`);
     }
+    // Positions 1-4 (the tail) must be exactly four ASCII digits.
     const tail = s.slice(1);
     if (!/^\d{4}$/.test(tail)) {
         throw new Error(`Invalid NORAD designator: ${s}`);
     }
 
+    // step over the I/O gaps so letters map to contiguous values 10..33
     const skip = c > CODE_O ? 2 : c > CODE_I ? 1 : 0;
+    // (c - CODE_A) is the raw alphabet offset; -skip compresses past I/O;
+    // +10 shifts to the spec's letter-value baseline (A=10).
     const letterIdx = c - CODE_A - skip + 10;
+    // Letter holds the ten-thousands digit; tail holds the lower four.
     return letterIdx * 10000 + parseInt(tail, 10);
 }
 
@@ -94,19 +110,26 @@ export function decode(s) {
  *   encode(339999)   // "Z9999"
  */
 export function encode(n) {
+    // Reject every non-integer numeric kind: BigInt, booleans, strings, null,
+    // undefined, NaN, ±Infinity, and floats. Number.isFinite does not coerce.
     if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0) {
         throw new Error(`Invalid NORAD ID: ${String(n)}`);
     }
+    // Legacy range: plain zero-padded decimal, no letter prefix.
     if (n < 100000) {
         return String(n).padStart(5, '0');
     }
+    // Upper bound for the letter-prefixed range; below 100k was returned above.
     if (n > MAX_NORAD) {
         throw new Error(`NORAD ID ${n} exceeds Alpha-5 range (max ${MAX_NORAD})`);
     }
+    // Split n into letter-value (10..33) and the 4-digit tail (0..9999).
     const high = Math.floor(n / 10000);
     const low = n % 10000;
+    // Zero-based offset; bumps below step over I (offset 8) and O (offset 14).
     let charIdx = high - 10;
     if (charIdx >= 8) charIdx++; // skip I
     if (charIdx >= 14) charIdx++; // skip O
+    // Assemble: 1 letter + 4 zero-padded digits = exactly 5 chars, no I or O.
     return String.fromCharCode(CODE_A + charIdx) + String(low).padStart(4, '0');
 }
