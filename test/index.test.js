@@ -432,6 +432,60 @@ describe('decode() rejects floats and special numeric strings', () => {
     });
 });
 
+describe('decode() rejects non-ASCII-space whitespace and mid-string whitespace', () => {
+    // The leading/trailing-space tests cover ASCII U+0020. Other whitespace
+    // characters and embedded whitespace also need to be rejected for the
+    // regex-based digit/letter validation to hold.
+    test.each([
+        ['tab', '\t25544'],
+        ['newline', '\n25544'],
+        ['carriage return', '25544\r'],
+        ['mid-string space', '255 44'],
+        ['mid-string tab', '255\t44'],
+    ])('decode rejects %s: %j', (_label, s) => {
+        expect(() => decode(s)).toThrow(/Invalid NORAD/);
+    });
+});
+
+describe('decode() rejects non-ASCII Unicode prefixes', () => {
+    // The charCodeAt-based prefix check only accepts 0x30..0x39 (digits) or
+    // 0x41..0x5A (A..Z). Everything else — Greek capital alpha (U+0391),
+    // fullwidth digits (U+FF10..), emoji surrogate halves — falls through.
+    test.each([
+        ['Greek capital Α (U+0391)', 'Α0123'],
+        ['Cyrillic A (U+0410)', 'А0123'],
+        ['fullwidth digit (U+FF10)', '００００５'],
+        ['emoji prefix', '🚀0123'],
+        ['BOM (U+FEFF)', '﻿25544'],
+    ])('decode rejects %s', (_label, s) => {
+        expect(() => decode(s)).toThrow(/Invalid NORAD/);
+    });
+});
+
+describe('decode() rejects exotic non-string types', () => {
+    // The typeof check at the top of decode() is the gate; pinning these
+    // ensures a future refactor can't accidentally relax it (e.g. by
+    // accepting array-likes after toString coercion).
+    test('rejects Symbol', () => {
+        expect(() => decode(/** @type {any} */ (Symbol('x')))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects empty array', () => {
+        expect(() => decode(/** @type {any} */ ([]))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects object', () => {
+        expect(() => decode(/** @type {any} */ ({}))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects function', () => {
+        expect(() => decode(/** @type {any} */ (() => {}))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects boolean true', () => {
+        expect(() => decode(/** @type {any} */ (true))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects boolean false', () => {
+        expect(() => decode(/** @type {any} */ (false))).toThrow(/Invalid NORAD/);
+    });
+});
+
 describe('encode() rejects every non-integer numeric kind', () => {
     test('rejects BigInt', () => {
         expect(() => encode(/** @type {any} */ (BigInt(100123)))).toThrow(
@@ -464,5 +518,38 @@ describe('encode() rejects every non-integer numeric kind', () => {
     });
     test('accepts 339999 (max boundary)', () => {
         expect(encode(339999)).toBe('Z9999');
+    });
+});
+
+describe('encode() rejects exotic non-number types', () => {
+    test('rejects Symbol', () => {
+        expect(() => encode(/** @type {any} */ (Symbol('x')))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects empty array', () => {
+        expect(() => encode(/** @type {any} */ ([]))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects single-element array (no coercion shortcut)', () => {
+        expect(() => encode(/** @type {any} */ ([100123]))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects object', () => {
+        expect(() => encode(/** @type {any} */ ({}))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects function', () => {
+        expect(() => encode(/** @type {any} */ (() => {}))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects Date', () => {
+        expect(() => encode(/** @type {any} */ (new Date()))).toThrow(/Invalid NORAD/);
+    });
+});
+
+describe('encode() — numeric special cases', () => {
+    test('accepts -0 (canonically equal to 0)', () => {
+        // -0 === 0 in JS; Number.isInteger(-0) === true.
+        expect(encode(-0)).toBe('00000');
+    });
+    test('2^53 + 1 rounds to 2^53 by IEEE-754; rejected by bound check', () => {
+        // Above MAX_SAFE_INTEGER, integer arithmetic loses precision.
+        // The bound check still catches the value (which rounds to 2^53).
+        expect(() => encode(2 ** 53 + 1)).toThrow(/exceeds Alpha-5/);
     });
 });
