@@ -10,9 +10,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Initial release.
 - `decode(s)` — parse an Alpha-5 or plain numeric designator string into its
-  canonical integer form.
+  canonical integer form. Accepts numeric strings of any length (for JSON-
+  coerce compatibility) but rejects values outside the 0–339,999 range.
 - `encode(n)` — encode an integer (0–339,999) into a 5-character designator
   string, using the Alpha-5 letter prefix for values 100,000 and above.
+  Rejects every non-integer numeric kind (BigInt, boolean, string, null,
+  undefined, NaN, Infinity, floats).
 - Hand-written TypeScript declarations.
 - Test suite covering every example in the Space-Track Alpha-5 documentation,
   the full A=10..Z=33 letter table, both I/O-skip boundaries in both

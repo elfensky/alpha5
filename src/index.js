@@ -30,12 +30,14 @@ const MAX_NORAD = 339999;
  *
  * Accepts both plain numeric strings (e.g. `"25544"`, `"00007"`) and
  * Alpha-5 designators (e.g. `"A0123"`, `"Z9999"`). Numeric inputs of
- * any length are accepted — `decode("7")` returns `7` — to
- * accommodate JSON sources that omit leading zeros.
+ * any length are accepted — `decode("7")` returns `7` — to accommodate
+ * JSON sources that omit leading zeros. The decoded value is always
+ * in the range 0..339,999; values outside that range are rejected.
  *
  * @param {string} s - The NORAD designator. Must be a non-empty string.
  * @returns {number} The decoded integer NORAD ID (0..339,999).
- * @throws {Error} If the input is not a valid NORAD designator.
+ * @throws {Error} If the input is not a valid NORAD designator, or
+ *   if it decodes to a value outside the Alpha-5 range.
  *
  * @example
  *   decode("25544")  // 25544
@@ -53,7 +55,11 @@ export function decode(s) {
         if (!/^\d+$/.test(s)) {
             throw new Error(`Invalid NORAD designator: ${s}`);
         }
-        return parseInt(s, 10);
+        const n = parseInt(s, 10);
+        if (n > MAX_NORAD) {
+            throw new Error(`NORAD ID ${n} exceeds Alpha-5 range (max ${MAX_NORAD})`);
+        }
+        return n;
     }
 
     if (c < CODE_A || c > CODE_Z || c === CODE_I || c === CODE_O) {

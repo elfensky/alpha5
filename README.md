@@ -49,19 +49,34 @@ encode(340000); // throws Error: exceeds Alpha-5 range
 
 ### `decode(s: string): number`
 
-Decode a NORAD designator string into its integer value.
+Decode a NORAD designator string into its integer value in the range `0..339_999`.
 
 Accepts both plain numeric strings (`"25544"`, `"00007"`) and Alpha-5 designators (`"A0123"`, `"Z9999"`). Numeric inputs of any length are accepted, so JSON sources that omit leading zeros (e.g. `"7"` instead of `"00007"`) still decode correctly.
 
-Throws if the input is not a string, is empty, has whitespace or a sign prefix, uses a reserved letter (`I`/`O`), uses a lowercase letter, or has a non-digit tail.
+Throws if the input:
+
+- is not a string, or is empty
+- has whitespace, a sign prefix, or a decimal/scientific/hex/octal/binary marker
+- uses a reserved letter (`I` or `O`)
+- uses a lowercase letter
+- has a non-digit tail after the letter prefix
+- decodes to a value greater than `339_999`
 
 ### `encode(n: number): string`
 
 Encode an integer NORAD ID into its 5-character designator string.
 
-Values below 100,000 are zero-padded to 5 digits. Values 100,000–339,999 use the Alpha-5 letter prefix. Output is always exactly 5 characters and never contains the reserved letters `I` or `O`.
+- Values `0..99_999` are zero-padded to 5 digits (`encode(7) === "00007"`).
+- Values `100_000..339_999` use the Alpha-5 letter prefix (`encode(100123) === "A0123"`).
+- Output is **always exactly 5 characters** and never contains the reserved letters `I` or `O`.
 
-Throws if `n` is not a non-negative finite integer, or exceeds 339,999.
+Throws if `n` is not a non-negative finite integer, or exceeds `339_999`. `BigInt`, booleans, strings, `null`, `undefined`, `NaN`, `±Infinity`, and non-integer floats are all rejected — only plain finite integers are accepted.
+
+#### What's not provided (intentional)
+
+- **No unpadded output option.** The library produces canonical 5-character Alpha-5; if you want unpadded output for IDs below 100,000, that's just `String(n)`. Variable-width output is not part of the Alpha-5 spec and would dilute the library's purpose.
+- **No bulk parsing of TLE/3LE lines.** This is a codec for the catalog-ID field only. Use a TLE parser (`tle.js`, `node-tle`) for full TLE/3LE handling and pass the catalog field through `decode` after extraction.
+- **No error subclasses.** All failures throw a plain `Error` with a descriptive message. If you need to distinguish failure modes, match on the message.
 
 ## The full letter table
 

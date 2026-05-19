@@ -38,6 +38,8 @@ The codec contract — these are tested but worth stating explicitly so you don'
 3. `encode(n)` never contains the letters `I` or `O`.
 4. `decode` accepts unpadded numeric strings (`"7"` → `7`), not just zero-padded ones — JSON sources from Space-Track sometimes omit padding.
 5. `decode` rejects whitespace, sign prefixes, lowercase letters, and letters inside the numeric tail.
+6. `decode` rejects any input that would produce a value outside `0..339_999` — including arbitrarily long numeric strings like `"999999"` or `"100000000"`. The input format is permissive, but the value range is not.
+7. `encode` rejects every non-integer numeric kind: `BigInt`, booleans, strings, `null`, `undefined`, `NaN`, `±Infinity`, and floats. Only plain finite integers pass.
 
 If you change the codec, the round-trip property test (`every 137th value in 0..339999`) is the most important guard — `137` is coprime with `10000` (the per-letter stride), so it can't miss a single letter row.
 

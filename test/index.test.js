@@ -357,3 +357,87 @@ describe('decode() input shape — strict vs permissive', () => {
         }
     });
 });
+
+describe('decode() output bound check — value must be in 0..339,999', () => {
+    // The decoder accepts numeric strings of any length (for JSON-coerce
+    // compatibility), but the resulting integer must still be a valid
+    // NORAD ID. A 6+ digit numeric input that exceeds the Alpha-5 range
+    // is meaningless — no real Space-Track source emits it, and
+    // encode() would refuse to round-trip it.
+    test('accepts max value via numeric string (339999)', () => {
+        expect(decode('339999')).toBe(339999);
+    });
+    test('rejects 340000 via numeric string', () => {
+        expect(() => decode('340000')).toThrow(/exceeds Alpha-5/);
+    });
+    test('rejects 999999 via numeric string', () => {
+        expect(() => decode('999999')).toThrow(/exceeds Alpha-5/);
+    });
+    test('rejects very long numeric string (precision-loss region)', () => {
+        expect(() => decode('100000000')).toThrow(/exceeds Alpha-5/);
+    });
+    test('accepts 6+ digit numeric below max (100000 via "100000")', () => {
+        // Non-canonical input (the canonical form is "A0000") but accepted
+        // for permissiveness — value is in range.
+        expect(decode('100000')).toBe(100000);
+    });
+});
+
+describe('decode() rejects floats and special numeric strings', () => {
+    test('rejects decimal: "1.5"', () => {
+        expect(() => decode('1.5')).toThrow(/Invalid NORAD/);
+    });
+    test('rejects scientific notation: "1e5"', () => {
+        expect(() => decode('1e5')).toThrow(/Invalid NORAD/);
+    });
+    test('rejects "NaN" (N is valid letter but tail "aN" is non-numeric)', () => {
+        expect(() => decode('NaN')).toThrow(/Invalid NORAD/);
+    });
+    test('rejects "Infinity" (I is reserved)', () => {
+        expect(() => decode('Infinity')).toThrow(/Invalid NORAD/);
+    });
+    test('rejects "0x10" (hex)', () => {
+        expect(() => decode('0x10')).toThrow(/Invalid NORAD/);
+    });
+    test('rejects "0b10" (binary)', () => {
+        expect(() => decode('0b10')).toThrow(/Invalid NORAD/);
+    });
+    test('rejects "0o10" (octal)', () => {
+        expect(() => decode('0o10')).toThrow(/Invalid NORAD/);
+    });
+});
+
+describe('encode() rejects every non-integer numeric kind', () => {
+    test('rejects BigInt', () => {
+        expect(() => encode(/** @type {any} */ (BigInt(100123)))).toThrow(
+            /Invalid NORAD/,
+        );
+    });
+    test('rejects boolean true', () => {
+        expect(() => encode(/** @type {any} */ (true))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects boolean false', () => {
+        expect(() => encode(/** @type {any} */ (false))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects null', () => {
+        expect(() => encode(/** @type {any} */ (null))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects undefined', () => {
+        expect(() => encode(/** @type {any} */ (undefined))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects string-encoded number', () => {
+        expect(() => encode(/** @type {any} */ ('100'))).toThrow(/Invalid NORAD/);
+    });
+    test('rejects 2^53 (above MAX_SAFE_INTEGER, in exceeds-range branch)', () => {
+        expect(() => encode(2 ** 53)).toThrow(/exceeds Alpha-5/);
+    });
+    test('rejects -0.5 (negative non-integer)', () => {
+        expect(() => encode(-0.5)).toThrow(/Invalid NORAD/);
+    });
+    test('accepts 0 (boundary — valid catalog ID)', () => {
+        expect(encode(0)).toBe('00000');
+    });
+    test('accepts 339999 (max boundary)', () => {
+        expect(encode(339999)).toBe('Z9999');
+    });
+});
