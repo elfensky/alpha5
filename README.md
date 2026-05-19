@@ -1,5 +1,7 @@
 # alpha5
 
+[![CI](https://github.com/elfensky/alpha5/actions/workflows/ci.yml/badge.svg)](https://github.com/elfensky/alpha5/actions/workflows/ci.yml)
+
 NORAD Alpha-5 designator codec — encode and decode satellite catalog IDs between integers and the 5-character format used by Space-Track and modern TLE/3LE files.
 
 Zero dependencies. Pure ESM. ~70 lines of source. One-and-done — the spec is frozen by the US Space Force.
