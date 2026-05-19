@@ -1,0 +1,63 @@
+{
+    "name": "@elfensky/alpha5",
+    "version": "1.0.0",
+    "publishConfig": {
+        "access": "public"
+    },
+    "description": "NORAD Alpha-5 designator codec — encode/decode satellite catalog IDs between integers and the 5-character Space-Track format.",
+    "type": "module",
+    "main": "./src/index.js",
+    "types": "./src/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.d.ts",
+            "import": "./src/index.js"
+        }
+    },
+    "sideEffects": false,
+    "files": [
+        "src/index.js",
+        "src/index.d.ts",
+        "README.md",
+        "LICENSE",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "format": "prettier --write .",
+        "lint": "prettier --check .",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "keywords": [
+        "alpha5",
+        "alpha-5",
+        "norad",
+        "norad-cat-id",
+        "space-track",
+        "spacetrack",
+        "satellite",
+        "satellite-catalog",
+        "tle",
+        "designator",
+        "codec",
+        "encoder",
+        "decoder"
+    ],
+    "author": "Andrei Lavrenov <andrei@lav.ren>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/elfensky/alpha5.git"
+    },
+    "bugs": {
+        "url": "https://github.com/elfensky/alpha5/issues"
+    },
+    "homepage": "https://github.com/elfensky/alpha5#readme",
+    "engines": {
+        "node": ">=20"
+    },
+    "devDependencies": {
+        "prettier": "^3.3.0",
+        "vitest": "^4.1.0"
+    }
+}
