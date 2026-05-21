@@ -79,7 +79,7 @@ To ship a release:
 
 The workflow refuses to publish unless the `v<version>` tag matches `package.json`'s `version`, then re-runs lint + test before `npm publish`. A release is not done until it is on npm **and** has a `v<version>` git tag and a GitHub Release — `gh release create` produces all three; the tag must point at the commit that carries that version.
 
-The npm↔GitHub trust is configured once on npmjs.com (package **Settings → Trusted Publisher**): repo `elfensky/alpha5`, workflow `publish.yml`, environment `npm`. The `npm` GitHub environment (repo **Settings → Environments**) limits deployment to `v*` tags. No publish secrets live in the repo.
+The npm↔GitHub trust is configured once on npmjs.com (package **Settings → Trusted Publisher**): repo `elfensky/alpha5`, workflow `publish.yml`, environment `npm`. The `npm` GitHub environment (repo **Settings → Environments**) limits deployment to `v*` tags. No publish secrets live in the repo. The package's **Publishing access** on npm is set to _require 2FA and disallow tokens_ — so the only ways to publish `alpha5` are this workflow (via OIDC) or an interactive `npm publish` with 2FA; no automation token can.
 
 ## Identity
 
