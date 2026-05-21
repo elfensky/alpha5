@@ -2,17 +2,7 @@
 
 [![CI](https://github.com/elfensky/alpha5/actions/workflows/ci.yml/badge.svg)](https://github.com/elfensky/alpha5/actions/workflows/ci.yml)
 
-NORAD Alpha-5 designator codec — encode and decode satellite catalog IDs between integers and the 5-character format used by Space-Track and modern TLE/3LE files.
-
-Zero dependencies. Pure ESM. ~70 lines of source. One-and-done — the spec is frozen by the US Space Force.
-
-## Why
-
-When the satellite catalog approached the 100,000-object limit of the legacy 5-digit NORAD field, the US Space Force introduced **Alpha-5** as a stopgap: the first character of the 5-char field becomes a letter (`A`=10 through `Z`=33, skipping `I` and `O` to avoid confusion with `1` and `0`), extending the addressable range to 339,999 objects.
-
-If you ingest TLE, 3LE, or GP/GP_HISTORY data from Space-Track, you need this codec. The official Space-Track API only accepts integer NORAD IDs for filtering, so any 5-char designator coming in must be decoded before you can use it as a database key or query parameter.
-
-Spec: <https://www.space-track.org/documentation#tle-alpha5>
+NORAD Alpha-5 designator codec — encode and decode satellite catalog IDs between integers and the 5-character format used by Space-Track and modern TLE/3LE files (`A0123` ↔ `100123`). Zero dependencies. Pure ESM. ~70 lines of source. The spec is frozen by the US Space Force.
 
 ## Install
 
@@ -90,6 +80,14 @@ Verbatim from the [Space-Track Alpha-5 documentation](https://www.space-track.or
 | H      | 17    |     | R      | 25    |     | Z      | 33    |
 
 `I` and `O` are omitted.
+
+## Why
+
+When the satellite catalog approached the 100,000-object limit of the legacy 5-digit NORAD field, the US Space Force introduced **Alpha-5** as a stopgap: the first character of the 5-char field becomes a letter (`A`=10 through `Z`=33, skipping `I` and `O` to avoid confusion with `1` and `0`), extending the addressable range to 339,999 objects.
+
+If you ingest TLE, 3LE, or GP/GP_HISTORY data from Space-Track, you need this codec. The official Space-Track API only accepts integer NORAD IDs for filtering, so any 5-char designator coming in must be decoded before you can use it as a database key or query parameter.
+
+Spec: <https://www.space-track.org/documentation#tle-alpha5>
 
 ## Stability
 
