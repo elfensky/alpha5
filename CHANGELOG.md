@@ -11,6 +11,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Refined npm `keywords` for discoverability: added `norad-id`, `celestrak`,
   `satcat`, `catalog-number`, and `3le`; dropped the generic `designator`,
   `encoder`, and `decoder`. No source, API, or behavior changes.
+- Restructured the README for first-time visitors: Install, Usage, and API now
+  precede the `Why`/history section, and the lead paragraph gained a concrete
+  `A0123 ↔ 100123` example.
 
 ## [1.0.0] - 2026-05-19
 
