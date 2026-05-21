@@ -48,7 +48,7 @@ If you change the codec, the round-trip property test (`every 137th value in 0..
 - **Node 20+** (engines field in `package.json`).
 - **Vitest** for tests. The one dev dep that earns its keep.
 - **Prettier** for formatting. That's it.
-- **GitHub Actions** runs lint + tests on Node 20, 22, 24 (`.github/workflows/ci.yml`).
+- **GitHub Actions** runs lint + tests on Node 20, 22, 24 (`.github/workflows/ci.yml`) and publishes to npm on each GitHub Release (`.github/workflows/publish.yml`).
 
 ## Verification
 
@@ -56,7 +56,7 @@ Run all three before pushing or publishing:
 
 ```bash
 npm run lint     # prettier --check
-npm test         # vitest run — 179 tests
+npm test         # vitest run — 239 tests
 npm audit        # should be 0 vulnerabilities
 ```
 
@@ -64,24 +64,22 @@ If any fail, report the actual output. Do not suppress failures.
 
 ## Publishing
 
-```bash
-git push origin main
-npm login                 # elfensky account
-npm whoami                # verify
-npm publish --dry-run     # preview tarball contents
-npm publish               # ship — no --access flag (unscoped package)
+Publishing is automated. Creating a GitHub Release triggers `.github/workflows/publish.yml`, which publishes to npm over OIDC **trusted publishing** — no `NPM_TOKEN`, no `npm login` — and attaches an npm provenance attestation automatically.
 
-# Tag + GitHub Release — run right after `npm publish`, with NO commits in
-# between (the v1.0.0 convention). Never name a SHA: `git tag` tags HEAD by
-# default, and publish + tag must capture the same HEAD.
-git tag -a v<version> -m "<version>"   # <version> from package.json, e.g. v1.0.1
-git push origin v<version>             # tags are NOT pushed by `git push origin main`
-gh release create v<version> --title "alpha5 v<version>" --notes "<CHANGELOG entry for this version>"
-```
+To ship a release:
 
-Tag `HEAD`, never a hardcoded SHA. Run `npm publish` and `git tag` back-to-back with nothing committed between them, so both capture the same commit — that commit is the release. The `v<version>` tag must match `package.json`'s `version`. A release is not done until it is both on npm **and** tagged — `v1.0.0` has a git tag and a GitHub Release; every version after it gets the same.
+1. On `main`, land the change together with its `package.json` `version` bump and `CHANGELOG.md` entry **in the same commit**. Patch for bug fixes, minor for additive API (unlikely), major for breaking changes (also unlikely — spec is frozen). Follow [keep-a-changelog](https://keepachangelog.com/en/1.1.0/) format.
+2. Push to `main` and let CI go green.
+3. Optionally preview the tarball: `npm publish --dry-run`.
+4. Cut the release — this creates the `v<version>` tag and fires the workflow:
 
-After publish, bump `version` in `package.json` and add a `CHANGELOG.md` entry **in the same commit** for the next release. Follow [keep-a-changelog](https://keepachangelog.com/en/1.1.0/) format. Patch for bug fixes, minor for additive API (unlikely), major for breaking changes (also unlikely — spec is frozen).
+    ```bash
+    gh release create v<version> --title "alpha5 v<version>" --notes "<CHANGELOG entry for this version>"
+    ```
+
+The workflow refuses to publish unless the `v<version>` tag matches `package.json`'s `version`, then re-runs lint + test before `npm publish`. A release is not done until it is on npm **and** has a `v<version>` git tag and a GitHub Release — `gh release create` produces all three; the tag must point at the commit that carries that version.
+
+The npm↔GitHub trust is configured once on npmjs.com (package **Settings → Trusted Publisher**): repo `elfensky/alpha5`, workflow `publish.yml`, environment `npm`. The `npm` GitHub environment (repo **Settings → Environments**) limits deployment to `v*` tags. No publish secrets live in the repo.
 
 ## Identity
 
