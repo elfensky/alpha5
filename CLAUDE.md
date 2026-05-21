@@ -71,13 +71,15 @@ npm whoami                # verify
 npm publish --dry-run     # preview tarball contents
 npm publish               # ship — no --access flag (unscoped package)
 
-# Tag the published commit and mirror it as a GitHub Release (the v1.0.0 convention):
-git tag -a v<version> -m "<version>"   # <version> = the version just published, e.g. v1.0.1
+# Tag + GitHub Release — run right after `npm publish`, with NO commits in
+# between (the v1.0.0 convention). Never name a SHA: `git tag` tags HEAD by
+# default, and publish + tag must capture the same HEAD.
+git tag -a v<version> -m "<version>"   # <version> from package.json, e.g. v1.0.1
 git push origin v<version>             # tags are NOT pushed by `git push origin main`
 gh release create v<version> --title "alpha5 v<version>" --notes "<CHANGELOG entry for this version>"
 ```
 
-The `v<version>` tag must match `package.json`'s `version` and point at the exact commit that was published. A release is not done until it is both on npm **and** tagged — `v1.0.0` has a git tag and a GitHub Release; every version after it gets the same.
+Tag `HEAD`, never a hardcoded SHA. Run `npm publish` and `git tag` back-to-back with nothing committed between them, so both capture the same commit — that commit is the release. The `v<version>` tag must match `package.json`'s `version`. A release is not done until it is both on npm **and** tagged — `v1.0.0` has a git tag and a GitHub Release; every version after it gets the same.
 
 After publish, bump `version` in `package.json` and add a `CHANGELOG.md` entry **in the same commit** for the next release. Follow [keep-a-changelog](https://keepachangelog.com/en/1.1.0/) format. Patch for bug fixes, minor for additive API (unlikely), major for breaking changes (also unlikely — spec is frozen).
 
